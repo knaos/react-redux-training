@@ -48,7 +48,10 @@ export default class App extends React.Component {
         <Greeting name={'Katerina'} logOutButton={logOutButton}>
           {dashboard}
         </Greeting>
-        <RegisterForm></RegisterForm>
+        <RegisterForm
+          user='user'
+          onChange={this.onInputChange}
+          onSubmit={this.onRegisterFormSubmit}></RegisterForm>
       </div>
     );
   }
