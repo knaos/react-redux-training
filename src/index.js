@@ -49,7 +49,7 @@ export default class App extends React.Component {
           {dashboard}
         </Greeting>
         <RegisterForm
-          user='user'
+          user={user}
           onChange={this.onInputChange}
           onSubmit={this.onRegisterFormSubmit}></RegisterForm>
       </div>
