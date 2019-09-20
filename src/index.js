@@ -1,70 +1,108 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import RegisterForm from './register-form';
+
+import { createStore } from 'redux';
+import {
+  reducers,
+  incrementAction,
+  decrementAction,
+  addTodo,
+  markTodoDone
+} from './store';
+
+let store = createStore(reducers);
+
+const disptachCopy = store.dispatch;
+store.dispatch = function(action) {
+  console.log(`Action dispatched: ${action.type}`);
+  console.log(action);
+  disptachCopy(action);
+};
 
 export default class App extends React.Component {
   constructor() {
     super();
 
     this.state = {
-      user: {
-        email: '',
-        password: '',
-        gender: '',
-        isProgrammer: false
-      }
+      count: 0,
+      todoLabel: '',
+      todoList: []
     };
-  }
 
-  onInputChange = keyValuePair => {
-    const newUser = Object.assign({}, this.state.user, {
-      [keyValuePair.key]: keyValuePair.value
+    store.subscribe(() => {
+      const { count, todo } = store.getState();
+      this.setState({ count: count, todoList: todo });
     });
-
-    this.setState({ user: newUser });
-  };
-
-  onRegisterFormSubmit = user => {
-    console.log('Submitted!', user);
-  };
-
-  render() {
-    const { user } = this.state;
-    const dashboard = (
-      <div>
-        <h5>This is your todolist</h5>
-        <ul>
-          <li>Feed dog</li>
-          <li>Feed cat</li>
-          <li>Feed dog</li>
-        </ul>
-      </div>
-    );
-
-    const logOutButton = <button>Log out user: Atanas</button>;
-
-    return (
-      <div>
-        <Greeting name={'Katerina'} logOutButton={logOutButton}>
-          {dashboard}
-        </Greeting>
-        <RegisterForm
-          user={user}
-          onChange={this.onInputChange}
-          onSubmit={this.onRegisterFormSubmit}></RegisterForm>
-      </div>
-    );
   }
-}
 
-class Greeting extends React.Component {
+  increment = () => {
+    store.dispatch(incrementAction());
+  };
+
+  decrement = () => {
+    store.dispatch(decrementAction());
+  };
+
+  doubleValue = () => {
+    const { count } = this.state;
+
+    store.dispatch(incrementAction(count));
+  };
+
+  plusFive = () => {
+    store.dispatch(incrementAction(5));
+  };
+
+  onTodoChange = e => {
+    this.setState({ todoLabel: e.target.value });
+  };
+
+  onAddTodo = () => {
+    const { todoLabel } = this.state;
+    store.dispatch(addTodo(todoLabel));
+    this.setState({ todoLabel: '' });
+  };
+
+  onTodoToggle = todoId => {
+    console.log('Todo toggled:', todoId);
+    store.dispatch(markTodoDone(todoId));
+  };
+
   render() {
-    const { children, name, logOutButton } = this.props;
+    const { count, todoList, todoLabel } = this.state;
     return (
       <div>
-        <aside>{logOutButton}</aside>
-        <h1>Greetings, {name}!</h1>
-        {children}
+        <h1>Hello Redux</h1>
+        <div className='counter'>
+          <h2>Counter: {count}</h2>
+          <button onClick={this.increment}>Increment +</button>
+          <button onClick={this.decrement}>Decrement -</button>
+          <button onClick={this.doubleValue}>X2</button>
+          <button onClick={this.plusFive}>+5</button>
+        </div>
+        <hr></hr>
+        <div className='todo'>
+          <h2>Todo app</h2>
+          <input
+            placeholder='Add todo here...'
+            value={todoLabel}
+            onChange={this.onTodoChange}></input>
+          <button onClick={this.onAddTodo}>Add</button>
+          <ul>
+            {todoList.map((todo, index) => (
+              <li key={index}>
+                <input
+                  type='checkbox'
+                  checked={todo.done}
+                  onChange={() => {
+                    this.onTodoToggle(index);
+                  }}
+                />
+                <span>{todo.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     );
   }
